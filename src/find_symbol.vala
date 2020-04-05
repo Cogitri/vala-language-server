@@ -1,8 +1,8 @@
 using LanguageServer;
 
 class Vls.FindSymbol : Vala.CodeVisitor {
-    public LanguageServer.Position? pos { get; private set; }
-    private LanguageServer.Position? end_pos;
+    public Position pos { get; private set; }
+    private Position? end_pos;
     private Vala.SourceFile file;
     public bool search_multiline { get; private set; }
     public bool include_blocks { get; private set; }
@@ -69,10 +69,10 @@ class Vls.FindSymbol : Vala.CodeVisitor {
      * TODO: are children of a CodeNode guaranteed to have a source_reference within the parent?
      * if so, this can be much faster
      */
-    public FindSymbol (Vala.SourceFile file, LanguageServer.Position pos, 
-                        bool search_multiline = false,
-                        bool include_blocks = false,
-                        LanguageServer.Position? end_pos = null) {
+    public FindSymbol (Vala.SourceFile file, Position pos, 
+                       bool search_multiline = false,
+                       bool include_blocks = false,
+                       Position? end_pos = null) {
         this.pos = pos;
         this.end_pos = end_pos;
         this.file = file;
@@ -81,6 +81,8 @@ class Vls.FindSymbol : Vala.CodeVisitor {
         result = new Gee.ArrayList<Vala.CodeNode> ();
         seen = new Gee.HashSet<Vala.CodeNode> ();
         this.visit_source_file (file);
+        if (result.is_empty)
+            this.try_symbol_extractor ();
     }
 
     public FindSymbol.with_filter (Vala.SourceFile file, Vala.CodeNode needle, Filter filter_func) {
@@ -90,6 +92,12 @@ class Vls.FindSymbol : Vala.CodeVisitor {
         result = new Gee.ArrayList<Vala.CodeNode> ();
         seen = new Gee.HashSet<Vala.CodeNode> ();
         this.visit_source_file (file);
+        if (result.is_empty)
+            this.try_symbol_extractor ();
+    }
+
+    private void try_symbol_extractor () {
+        // var se = new SymbolExtractor (pos, current_scope, file);
     }
 
     public override void visit_source_file (Vala.SourceFile file) {
